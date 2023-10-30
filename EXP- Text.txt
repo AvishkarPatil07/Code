@@ -1,0 +1,191 @@
+EXP- Use sqoop to transfer data from RDBMS to hadoop
+
+if not downloaded use cloudera
+
+$ mysql -D retail -u retail_dba -p
+passwords: cloudera
+show tables
+In new terminal of cloudera :sqoop import --connect jdbc:mysql://localhost:3306/retail db --table customers --username retail dba --password cloudera --target-dir /sqoop import data -m
+after that go to HDFS and see data is imported
+
+---------------------------------------------------------------------------------------------------------------
+
+EXP- MongoDB to execute NoSQL commands.
+
+open terminal
+->mongosh
+->show dbs
+-> use alpha
+->db
+-> db.createCollection("students");
+-> show collections
+-> db.students.insert([{name : "karan", address : "Pune"},{name : "retesh", address : "Mumbai"}])
+->db.students.find()
+->db.students.update({'name' : 'karan'},{$set : {'name':'rohit'}})
+-> db.students.find()
+-> db.students.remove({'name':'karan'})
+
+---------------------------------------------------------------------------------------------------------------
+
+EXP - Crate HIVE data base and visulize using R
+
+[cloudera@quickstart ~]$ hive
+hive> create database demo;
+hive> show databases;
+hive> create table if not exists student (sid int, name string, gender string, ad dress string);
+hive> describe student;
+hive> INSERT INTO student VALUES (01, 'avi', 'Male', 'Then');
+hive> select * from student;
+hive> alter table student rename to stud;
+hive> show tables;
+
+hive> show tables;
+>str(airquality)
+> head (airquality, n = 3)
+> tail (airquality, n = 3)
+> summary(air quality)
+> library(help = "graphics")
+> plot (airqualitySozone)
+> plot (airqualitySozone, air qualitySwind)
+> plot (airquality)
+> plot (airqualitysozone, type= "b") > plot (airqualitySozone, type="h")
+> plot (airqualitysozone, xlab="ozone concentration", ylab one Concentration Plot') = 'no of instances', main='Oz
+> barplot (table(airqualitySozone), xlab="Ozone concentration", ylab="Number of Instance s", main="Barplot of ozone concentration")
+
+----------------------------------------------------------------------------------------------------
+
+EXP - DGIM to cout 1's
+
+class DGIM:
+    def __init__(self, window_size):
+        self.window_size = window_size
+        self.buckets = []
+
+    def add_new_bit(self, bit):
+        if len(self.buckets) == 0:
+            self.buckets.append([bit])
+        else:
+            if len(self.buckets[-1]) == 0:
+                self.buckets[-1].append(bit)
+            elif len(self.buckets[-1]) < self.window_size:
+                self.buckets[-1].append(bit)
+            else:
+                self.buckets.append([bit])
+            if len(self.buckets) > self.window_size:
+                self.buckets.pop(0)
+
+    def estimate_count_of_ones(self):
+
+        total_count = 0
+        for i in range(len(self.buckets)):
+            count_of_ones_in_bucket = 0
+            for bit in self.buckets[i]:
+                if bit == 1:
+                    count_of_ones_in_bucket += 1
+            total_count += count_of_ones_in_bucket * 2 ** i
+        return total_count
+
+dgim = DGIM(window_size=16)
+bit_stream = [1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0]
+for bit in bit_stream:
+    dgim.add_new_bit(bit)
+estimated_count = dgim.estimate_count_of_ones()
+print("Estimated count of ones:", estimated_count)
+
+
+
+--------------------------------------------------------------------------------------------------------------
+
+
+EXP- BLOOM Filter
+
+def sum_digits(ip):
+    s = 0
+    for i in ip:
+        s += int(i)
+    return s
+
+def h1(ip):
+    s = sum_digits(ip)
+    return s % 5
+
+def h2(ip):
+    s = sum_digits(ip)
+    return (2 * s + 3) % 5
+
+bit_vector = [0, 0, 0, 0, 0]
+
+while True:
+    ip = input("Enter an Integer (or space to exit): ")
+    if ip == ' ':
+        break
+
+    print("H1:", h1(ip), "H2:", h2(ip))
+    bit_vector[h1(ip)] = 1
+    bit_vector[h2(ip)] = 1
+    print(bit_vector)
+
+ip = input("Enter a string to test membership: ")
+
+if bit_vector[h1(ip)] == 1 and bit_vector[h2(ip)] == 1:
+    print(ip, "may be present")
+else:
+    print(ip, "is not present")
+
+---------------------------------------------------------------------------------------
+
+EXP- K - Means Clustering using MapReduce
+
+import random
+import multiprocessing
+
+
+data = [(random.uniform(0, 100), random.uniform(0, 100)) for _ in range(100)]
+
+K = 3
+
+iterations = 10
+
+def euclidean_distance(point1, point2):
+    return ((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2) ** 0.5
+
+centroids = random.sample(data, K)
+
+for _ in range(iterations):
+
+    def map_step(data_point):
+        min_distance = float('inf')
+        assigned_centroid = None
+        for centroid_index, centroid in enumerate(centroids):
+            distance = euclidean_distance(data_point, centroid)
+            if distance < min_distance:
+                min_distance = distance
+                assigned_centroid = centroid_index
+        return assigned_centroid, data_point
+
+    pool = multiprocessing.Pool()
+    mapped_data = pool.map(map_step, data)
+    pool.close()
+    pool.join()
+
+    centroid_sums = [(0, 0) for _ in range(K)]
+    centroid_counts = [0] * K
+    for assigned_centroid, data_point in mapped_data:
+        centroid_sums[assigned_centroid] = (
+            centroid_sums[assigned_centroid][0] + data_point[0],
+            centroid_sums[assigned_centroid][1] + data_point[1]
+        )
+        centroid_counts[assigned_centroid] += 1
+
+    new_centroids = [
+        (centroid_sums[i][0] / centroid_counts[i], centroid_sums[i][1] / centroid_counts[i])
+        if centroid_counts[i] > 0 else centroids[i]
+        for i in range(K)
+    ]
+
+    centroids = new_centroids
+
+print("Final Centroids:")
+for i, centroid in enumerate(centroids):
+    print(f"Cluster {i + 1}: {centroid}")
+
