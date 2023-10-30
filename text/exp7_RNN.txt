@@ -1,0 +1,53 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.layers import SimpleRNN, Dense
+from tensorflow.keras.models import Sequential
+
+# Generate some sample data for sequence classification
+sequences = np.random.randn(100, 10, 1)  # 100 sequences of length 10 with 1 feature
+labels = np.random.randint(2, size=(100,))
+
+# Create an RNN model for sequence classification
+model = Sequential()
+model.add(SimpleRNN(32, input_shape=(10, 1)))  # RNN layer with 32 units
+model.add(Dense(1, activation='sigmoid'))  # Output layer for binary classification
+
+# Compile the model
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(sequences, labels, epochs=10, batch_size=32)
+
+# Evaluate the model
+loss, accuracy = model.evaluate(sequences, labels)
+print(f'Loss: {loss}, Accuracy: {accuracy}')
+
+
+
+
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.layers import SimpleRNN, TimeDistributed, Dense
+from tensorflow.keras.models import Sequential
+
+# Generate some sample data for sequence-to-sequence modeling
+sequences = np.random.randn(100, 10, 1)  # 100 sequences of length 10 with 1 feature
+output_sequences = sequences  # Copy the input sequences to the output
+
+# Create an RNN model for sequence-to-sequence modeling
+model = Sequential()
+model.add(SimpleRNN(32, return_sequences=True, input_shape=(10, 1)))  # RNN layer with 32 units
+model.add(TimeDistributed(Dense(1)))  # Output layer for each time step
+
+# Compile the model
+model.compile(optimizer='adam', loss='mse')  # Mean squared error for regression
+
+# Train the model
+model.fit(sequences, output_sequences, epochs=10, batch_size=32)
+
+# Evaluate the model (optional for this task)
+predicted_sequences = model.predict(sequences)
+print("Sample input sequence:")
+print(sequences[0])
+print("Predicted output sequence:")
+print(predicted_sequences[0])

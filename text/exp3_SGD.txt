@@ -1,0 +1,50 @@
+import numpy as np
+
+# Generate synthetic data
+np.random.seed(0)
+X = 2 * np.random.rand(100, 1)  # 100 samples with 1 feature
+y = 4 + 3 * X + np.random.randn(100, 1)  # Linear equation with noise
+
+# Scale the input features (mean normalization)
+mean_X = np.mean(X)
+std_X = np.std(X)
+X_scaled = (X - mean_X) / std_X
+
+# Define the linear regression model
+def predict(X, theta):
+    # Add a bias term (intercept) by appending a column of ones to X
+    X_b = np.c_[np.ones((X.shape[0], 1)), X]
+
+    # Compute the prediction using dot product
+    return X_b.dot(theta)
+
+# Initialize model parameters (including the intercept)
+theta = np.random.randn(2, 1)  # Slope and intercept (initialized randomly)
+learning_rate = 0.01
+epochs = 1000
+
+# SGD optimization
+for epoch in range(epochs):
+    for i in range(len(X_scaled)):
+        # Randomly select one data point
+        random_index = np.random.randint(len(X_scaled))
+        xi = X_scaled[random_index:random_index+1]
+        yi = y[random_index:random_index+1]
+
+        # Compute the prediction and error for the selected data point
+        prediction = predict(xi, theta)
+        error = prediction - yi
+
+        # Update model parameters using SGD
+        gradients = xi.T.dot(error)
+        theta -= learning_rate * gradients
+
+    if epoch % 100 == 0:
+        # Compute and print the mean squared error
+        mse = np.mean((predict(X_scaled, theta) - y) ** 2)
+        print(f'Epoch {epoch}, Mean Squared Error: {mse:.4f}')
+
+# Print the trained model parameters (slope and intercept)
+print("\nTrained Model Parameters:")
+print(f"Slope (Theta 1): {theta[1][0]:.4f}")
+print(f"Intercept (Theta 0): {theta[0][0]:.4f}")

@@ -1,0 +1,103 @@
+# LSTM Model for handwriting recognition
+
+import tensorflow as tf
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.utils import to_categorical
+
+# Load and preprocess the MNIST dataset
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+y_train = to_categorical(y_train, num_classes=10)
+y_test = to_categorical(y_test, num_classes=10)
+
+# Define the LSTM model
+model = Sequential()
+model.add(LSTM(128, input_shape=(28, 28)))  # LSTM layer with 128 units
+model.add(Dense(10, activation='softmax'))  # Output layer with 10 classes (digits 0-9)
+
+# Compile the model
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+model.fit(x_train, y_train, epochs=5, batch_size=128, validation_split=0.2)
+
+# Evaluate the model on test data
+loss, accuracy = model.evaluate(x_test, y_test)
+print(f'Loss: {loss}, Accuracy: {accuracy}')
+
+# Make predictions
+predictions = model.predict(x_test)
+
+
+
+
+
+# LSTM Model for Time Series forecasting
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import mean_squared_error
+
+# Load your time series data
+# Replace this with your own data loading logic
+# In this example, I'll create a sample dataset
+data = np.sin(np.linspace(0, 100, 500)) + np.random.randn(500) * 0.1
+
+# Normalize the data
+scaler = MinMaxScaler()
+data = scaler.fit_transform(data.reshape(-1, 1))
+
+# Split the data into training and testing sets
+train_size = int(len(data) * 0.8)
+train_data, test_data = data[:train_size], data[train_size:]
+
+# Create sequences and labels for training
+def create_sequences(data, seq_length):
+    sequences = []
+    labels = []
+    for i in range(len(data) - seq_length):
+        sequences.append(data[i:i+seq_length])
+        labels.append(data[i+seq_length])
+    return np.array(sequences), np.array(labels)
+
+seq_length = 10  # Adjust this based on your problem
+X_train, y_train = create_sequences(train_data, seq_length)
+X_test, y_test = create_sequences(test_data, seq_length)
+
+# Build the LSTM model
+model = Sequential()
+model.add(LSTM(50, activation='relu', input_shape=(seq_length, 1)))
+model.add(Dense(1))
+model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
+
+# Train the model
+model.fit(X_train, y_train, epochs=50, batch_size=32, verbose=1)
+
+# Make predictions on test data
+y_pred = model.predict(X_test)
+
+# Inverse transform the predictions and true values to the original scale
+y_pred = scaler.inverse_transform(y_pred)
+y_test = scaler.inverse_transform(y_test)
+
+# Calculate Mean Squared Error (MSE)
+mse = mean_squared_error(y_test, y_pred)
+print(f"Mean Squared Error: {mse}")
+
+# Plot the true vs. predicted values
+plt.figure(figsize=(12, 6))
+plt.plot(y_test, label='True')
+plt.plot(y_pred, label='Predicted')
+plt.legend()
+plt.xlabel('Time')
+plt.ylabel('Value')
+plt.title('Time Series Forecasting with LSTM')
+plt.show()
